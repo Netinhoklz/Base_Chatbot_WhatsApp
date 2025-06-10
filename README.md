@@ -1,5 +1,5 @@
   <a href="https://z-api.io/">
-    <img src="https://z-api.io/wp-content/uploads/2023/04/Z-API.svg" alt="Z-API Logo" width="200"/>
+    <img src="https://www.z-api.io/wp-content/themes/z-api/dist/images/logo.svg" alt="Z-API Logo" width="200"/>
   </a>
 </div>
 
@@ -147,7 +147,7 @@ sequenceDiagram
     # Credenciais da OpenAI
     OPENAI_API_KEY="sk-..."
     ```
-2. ** Ajuste a sua credencia da Z-API dentro do arquivo funcao_envio.py
+2. ** Ajuste a sua credencia da Z-API dentro do arquivo funcao_envio.py**
 
 ---
 
