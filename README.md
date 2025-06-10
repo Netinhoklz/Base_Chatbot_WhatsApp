@@ -129,7 +129,8 @@ sequenceDiagram
 *   Python 3.8+
 *   Conta na plataforma Z-API com as credenciais.
 *   Chave de API da OpenAI.
-
+*   Ngrok ou hospedagem online.
+  
 ### ⚙️ Passos de Instalação
 
 1.  **Clone o repositório.**
@@ -148,7 +149,7 @@ sequenceDiagram
     OPENAI_API_KEY="sk-..."
     ```
 2. ** Ajuste a sua credencia da Z-API dentro do arquivo funcao_envio.py**
-
+3. **Ligue o Ngrok na porta deseja e ajuste o link do Webhook no Z-API.**
 ---
 
 ## 🎨 Customização e Extensibilidade
