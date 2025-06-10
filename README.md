@@ -1,4 +1,3 @@
-
   <a href="https://z-api.io/">
     <img src="https://z-api.io/wp-content/uploads/2023/04/Z-API.svg" alt="Z-API Logo" width="200"/>
   </a>
@@ -22,164 +21,80 @@
 ## 📋 Índice
 
 1.  [**Visão Geral**](#-visão-geral)
-    *   [Objetivo do Projeto](#-objetivo-do-projeto)
-    *   [Principais Funcionalidades](#-principais-funcionalidades)
-2.  [**Arquitetura do Sistema**](#-arquitetura-do-sistema)
-    *   [Diagrama de Fluxo](#-diagrama-de-fluxo)
-    *   [Componentes Chave](#-componentes-chave)
-3.  [**Como Funciona: O Fluxo de uma Conversa**](#-como-funciona-o-fluxo-de-uma-conversa)
+2.  [**Gerenciamento de Conversas: A Base de Dados de Brinde**](#-gerenciamento-de-conversas-a-base-de-dados-de-brinde)
+3.  [**Arquitetura do Sistema**](#-arquitetura-do-sistema)
 4.  [**Guia de Instalação e Configuração**](#-guia-de-instalação-e-configuração)
-    *   [Pré-requisitos](#-pré-requisitos)
-    *   [Passos de Instalação](#-passos-de-instalação)
-    *   [Configurando o Ambiente](#-configurando-o-ambiente)
-    *   [Executando o Servidor](#-executando-o-servidor)
 5.  [**Customização e Extensibilidade**](#-customização-e-extensibilidade)
-    *   [Implementando a Lógica da IA](#-implementando-a-lógica-da-ia)
-    *   [Adaptando para Outras Plataformas](#-adaptando-para-outras-plataformas)
-6.  [**Melhorias Futuras**](#-melhorias-futuras)
-7.  [**Licença**](#-licença)
 
 ---
 
 ## 🎯 Visão Geral
 
-Este projeto implementa um serviço de backend para um chatbot de WhatsApp que se destaca por sua capacidade de **acumular mensagens de forma inteligente**. Em vez de responder reativamente a cada interação, o sistema aguarda uma pausa na conversa do usuário para consolidar múltiplas mensagens — incluindo texto, áudios transcritos e descrições de imagens — em um único prompt contextual.
+Este projeto implementa um serviço de backend para um chatbot de WhatsApp que se destaca por sua capacidade de **acumular mensagens de forma inteligente**. Em vez de responder reativamente a cada interação, o sistema aguarda uma pausa na conversa do usuário para consolidar múltiplas mensagens em um único prompt contextual.
 
-Este prompt unificado permite que modelos de linguagem (LLMs) como o GPT-4 gerem respostas muito mais coesas, precisas e humanizadas, transformando interações fragmentadas em um diálogo fluido.
+O resultado é um chatbot que compreende o contexto completo da solicitação do usuário, permitindo que a IA gere respostas muito mais coesas, precisas e humanizadas.
 
-### 🌟 Objetivo do Projeto
+---
 
-O principal objetivo é superar a limitação de chatbots tradicionais que processam cada mensagem isoladamente. Ao criar um "buffer de contexto", o bot pode entender a intenção completa do usuário, mesmo que ela seja expressa em várias partes, resultando em uma experiência de usuário drasticamente superior.
+## 🗄️ Gerenciamento de Conversas: A Base de Dados de Brinde
 
-### ✨ Principais Funcionalidades
+Para tornar o chatbot ainda mais poderoso, este projeto inclui um script bônus, **`gerar_base_dados.py`**, que implementa uma base de dados local simples. Ele foi projetado como um "brinde" para oferecer persistência de conversas sem a complexidade de um banco de dados externo.
 
-*   **Acumulador de Mensagens:** Consolida mensagens enviadas em um curto intervalo de tempo.
-*   **Suporte Multimodal Completo:**
-    *   💬 **Texto:** Processa mensagens de texto padrão.
-    *   🎤 **Áudio:** Transcreve automaticamente mensagens de voz para texto usando **OpenAI Whisper**.
-    *   🖼️ **Imagem:** Gera descrições textuais de imagens enviadas usando **GPT-4 Vision**.
-    *   📹 **Vídeo:** Reconhece o recebimento de vídeos e captura suas legendas.
-*   **Temporizador Dinâmico:** Um temporizador reinicia a cada nova mensagem, acionando a resposta apenas quando o usuário faz uma pausa.
-*   **Arquitetura Flexível:** Projetado para ser independente da API de envio, permitindo fácil adaptação a qualquer serviço de mensageria (Telegram, Messenger, etc.).
-*   **Segurança de Concorrência:** Utiliza `threading.Lock` para garantir o processamento seguro e sem conflitos de mensagens de múltiplos usuários simultâneos.
+### Como Funciona?
+
+*   **Armazenamento Local:** O script utiliza um arquivo (geralmente JSON) para salvar o histórico de mensagens de cada usuário.
+*   **Memória de Longo Prazo:** Com ele, o bot pode "lembrar" de interações passadas, não apenas das mensagens da sessão atual.
+*   **Contexto Aprimorado:** Ao carregar o histórico antes de chamar a IA, as respostas se tornam drasticamente mais ricas e personalizadas.
+*   **Fácil Implementação:** Não requer configuração de um banco de dados como MySQL ou Redis. Basta usar as funções de leitura e escrita do script na sua lógica principal.
 
 ---
 
 ## 🏗️ Arquitetura do Sistema
 
-O sistema é construído sobre uma base de Python e Flask, com uma arquitetura simples, porém poderosa, focada em modularidade e performance.
+O sistema é construído sobre Python e Flask, com uma arquitetura focada em modularidade. Os componentes principais são:
 
-### 🌊 Diagrama de Fluxo
-
-```mermaid
-sequenceDiagram
-    participant User as Usuário (WhatsApp)
-    participant ZApi as Z-API
-    participant Server as Servidor Flask
-    participant AI as Lógica de IA (GPT)
-
-    User->>ZApi: Envia Mensagem (Texto/Áudio/Imagem)
-    ZApi->>Server: POST /webhook com dados da msg
-    Server->>Server: Extrai conteúdo e identifica tipo
-    Note right of Server: Se áudio, transcreve.<br/>Se imagem, descreve.
-    Server->>Server: Acumula texto no buffer do usuário
-    Server->>Server: Reinicia o timer de 30s
-    User->>ZApi: Envia outra mensagem (dentro de 30s)
-    ZApi->>Server: POST /webhook ...
-    Server->>Server: Repete processo de acumulação e reinicia o timer
-    
-    loop Timer Expira
-        Note over Server: Usuário parou de enviar mensagens.
-        Server->>Server: Timer de 30s expira.
-    end
-    
-    Server->>AI: Envia prompt consolidado
-    AI-->>Server: Retorna resposta completa
-    Server->>ZApi: Envia resposta para o usuário via API
-    ZApi-->>User: Entrega a resposta do bot
-```
-
-### 🧩 Componentes Chave
-
-*   **`app.py` (Servidor Flask):** O núcleo da aplicação. Recebe webhooks, gerencia o estado da aplicação (mensagens e timers) e orquestra todo o fluxo.
-*   **`funcoes_chatgpt.py`:** Módulo responsável pela interação com as APIs da OpenAI (Whisper para transcrição, GPT-4V para visão, e o LLM para geração de respostas).
-*   **`funcao_envio.py`:** Abstrai a comunicação com a API do Zapi para enviar mensagens de volta ao usuário.
-*   **Dicionários de Estado em Memória:**
-    *   `accumulated_messages`: Armazena o contexto da conversa de cada usuário.
-    *   `active_timers`: Mantém referência aos timers ativos para poder cancelá-los.
-    *   `processing_lock`: Garante a integridade dos dados em operações concorrentes.
-
----
-
-## 🚀 Como Funciona: O Fluxo de uma Conversa
-
-1.  **Recepção:** O endpoint `/webhook` recebe uma notificação da Z-API.
-2.  **Processamento:** O conteúdo é extraído. Se for uma mídia, é baixada e convertida para texto (transcrição ou descrição).
-3.  **Acumulação Segura:** Usando um `lock`, o sistema adiciona o novo texto ao buffer do usuário correspondente.
-4.  **Gerenciamento do Timer:** Qualquer timer anterior para aquele usuário é **cancelado** e um novo é **iniciado**. Este passo é crucial para garantir que o bot só responda após a última mensagem de uma sequência.
-5.  **Expiração e Ação:** Quando o usuário para de interagir, o timer expira e executa a função de callback `on_timer_expire`.
-6.  **Chamada da Lógica Principal:** A função `on_timer_expire` consolida todas as mensagens acumuladas em uma única string e a passa para a função `responder_usuario`.
-7.  **Geração e Envio da Resposta:** `responder_usuario` utiliza a string completa para interagir com a IA, gerar uma resposta coesa e, finalmente, chama a função `enviar_mensagem_zapi_com_delaytyping` para entregar a resposta ao usuário.
+*   **`app.py`:** O servidor Flask que recebe os webhooks e orquestra o fluxo.
+*   **`funcoes_chatgpt.py`:** Módulo que interage com as APIs da OpenAI.
+*   **`funcao_envio.py`:** Módulo que abstrai o envio de mensagens pela Z-API.
+*   **`gerar_base_dados.py`:** Gerencia o histórico de conversas em um arquivo local.
 
 ---
 
 ## 🛠️ Guia de Instalação e Configuração
 
+Siga estes passos para colocar o chatbot em funcionamento de forma rápida e correta.
+
 ### ✅ Pré-requisitos
 
-*   Python 3.8+
-*   Conta na plataforma Z-API com as credenciais.
-*   Chave de API da OpenAI.
+*   Python 3.8 ou superior
+*   Conta na plataforma **Z-API**
+*   Chave de API da **OpenAI**
 
-### ⚙️ Passos de Instalação
+### ⚙️ Passos de Configuração
 
-1.  **Clone o repositório.**
-2.  **Crie e ative um ambiente virtual.**
-3.  **Crie um arquivo `requirements.txt`:**
-    ```txt
-    flask
-    requests
-    openai
-    openai-whisper
-    python-dotenv
-    ```
-4.  **Instale as dependências:**
+1.  **Instalar Dependências:** O projeto já vem com um arquivo `requirements.txt`. Para instalar tudo o que é necessário, basta executar no seu terminal:
     ```bash
     pip install -r requirements.txt
     ```
 
-### 🔑 Configurando o Ambiente
-
-1.  **Crie um arquivo `.env`** com suas credenciais:
+2.  **Configurar Chave do ChatGPT (OpenAI):**
+    Crie um arquivo chamado `.env` na raiz do projeto. Dentro dele, coloque sua chave da API da OpenAI da seguinte forma:
     ```env
-    # Credenciais da OpenAI
     OPENAI_API_KEY="sk-..."
-
-    # Credenciais da Z-API
-    ZAPI_API_URL="https://api.z-api.io/instances/..."
-    ZAPI_TOKEN="SeuTokenAqui"
     ```
+    Isso mantém sua chave segura e fora do código-fonte.
+
+3.  **Configurar Credenciais da Z-API:**
+    As credenciais da Z-API (Token, Instance ID, etc.) devem ser inseridas **diretamente no arquivo `funcao_envio.py`**. Abra este arquivo e preencha as variáveis correspondentes no topo do script.
+
+4.  **Executar o Servidor:**
+    Inicie o servidor com `python app.py` e use uma ferramenta como o `ngrok` para criar uma URL pública (`ngrok http 5000`). Use essa URL no painel da Z-API.
 
 ---
 
 ## 🎨 Customização e Extensibilidade
 
-A lógica central do seu bot está na função `responder_usuario`. Adapte-a para definir a personalidade e as capacidades de resposta. A arquitetura modular permite trocar a API de envio (Z-API) por qualquer outra (Telegram, etc.) com alterações mínimas.
-
----
-
-## 📈 Melhorias Futuras
-
-*   **Persistência de Dados:** Usar **Redis** para salvar o estado da conversa.
-*   **Gerenciamento de Histórico:** Salvar conversas em um banco de dados para contextos mais longos.
-*   **Filas de Processamento:** Usar **RabbitMQ** ou **Celery** para escalar o processamento de IA.
-*   **Dashboard de Monitoramento:** Criar uma interface para visualizar logs e conversas.
-
----
-
-## 📜 Licença
-
-Este projeto está sob a licença MIT.
+A lógica central do seu bot reside na função `responder_usuario`. É aqui que você deve chamar as funções de `gerar_base_dados.py` para carregar o histórico e, em seguida, chamar a IA com o contexto completo. A arquitetura modular permite trocar facilmente qualquer componente.
 </code></pre>
         </div>
     </div>
