@@ -134,14 +134,7 @@ sequenceDiagram
 
 1.  **Clone o repositório.**
 2.  **Crie e ative um ambiente virtual.**
-3.  **Crie um arquivo `requirements.txt`:**
-    ```txt
-    flask
-    requests
-    openai
-    openai-whisper
-    python-dotenv
-    ```
+3.  **Carregue o arquivo `requirements.txt`:**
 4.  **Instale as dependências:**
     ```bash
     pip install -r requirements.txt
@@ -153,11 +146,8 @@ sequenceDiagram
     ```env
     # Credenciais da OpenAI
     OPENAI_API_KEY="sk-..."
-
-    # Credenciais da Z-API
-    ZAPI_API_URL="https://api.z-api.io/instances/..."
-    ZAPI_TOKEN="SeuTokenAqui"
     ```
+2. ** Ajuste a sua credencia da Z-API dentro do arquivo funcao_envio.py
 
 ---
 
@@ -173,35 +163,3 @@ A lógica central do seu bot está na função `responder_usuario`. Adapte-a par
 *   **Gerenciamento de Histórico:** Salvar conversas em um banco de dados para contextos mais longos.
 *   **Filas de Processamento:** Usar **RabbitMQ** ou **Celery** para escalar o processamento de IA.
 *   **Dashboard de Monitoramento:** Criar uma interface para visualizar logs e conversas.
-
----
-
-## 📜 Licença
-
-Este projeto está sob a licença MIT.
-</code></pre>
-        </div>
-    </div>
-    <script>
-        document.querySelector('.copy-button').addEventListener('click', function() {
-            const codeToCopy = document.getElementById('markdown-code').innerText;
-            navigator.clipboard.writeText(codeToCopy).then(() => {
-                this.innerText = 'Copiado!';
-                this.style.backgroundColor = '#28a745'; // Green color for success
-                setTimeout(() => {
-                    this.innerText = 'Copiar Código';
-                    this.style.backgroundColor = '#007bff'; // Revert to original color
-                }, 2000);
-            }).catch(err => {
-                console.error('Falha ao copiar o texto: ', err);
-                this.innerText = 'Erro!';
-                this.style.backgroundColor = '#dc3545'; // Red color for error
-                 setTimeout(() => {
-                    this.innerText = 'Copiar Código';
-                    this.style.backgroundColor = '#007bff';
-                }, 2000);
-            });
-        });
-    </script>
-</body>
-</html>
