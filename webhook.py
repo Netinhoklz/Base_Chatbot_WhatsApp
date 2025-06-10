@@ -23,10 +23,11 @@ def responder_usuario(mensagens_acumuladas_str, numero_telefone):
     Função chamada quando o timer expira, com as mensagens acumuladas.
     """
     # Conversa inicial
-    prompt_comand = [{"role": "system", "content": '''Seja amigavel e divertido'''}]
+    prompt = 'Seja amigavel e divertido'
     # CRIE AQUI DENTRO O SEU CHATBOT PARA GERAR UMA RESPOSTA E ENVIAR PARA O CLIENTE
     # ATUALMENTE ELE ESTA RETORNANDO A MENSAGEM ACUMULADA
-    enviar_mensagem_zapi_com_delaytyping(telefone=numero_telefone, mensagem=mensagens_acumuladas_str,tempo_digitando_segundos=5)
+    resposta_chatgpt = conversa_com_chatgpt_sem_lembranca(texto_user=mensagens_acumuladas_str,prompt_comand=prompt)
+    enviar_mensagem_zapi_com_delaytyping(telefone=numero_telefone, mensagem=resposta_chatgpt,tempo_digitando_segundos=5)
 
 
 # --- Função de Transcrição (Simulada) ---
